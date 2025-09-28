@@ -1,0 +1,9 @@
+uploads/
+client/node_modules
+client/build
+node_modules
+uploads/
+.env
+.DS_Store
+.idea
+server/chat.db

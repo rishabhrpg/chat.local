@@ -1,0 +1,23 @@
+services:
+  local-chat:
+    build: .
+    container_name: local-chat-app
+    ports:
+      - "3001:3001"
+    volumes:
+      - chat-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/app/data/chat.db
+    restart: unless-stopped
+    network_mode: host  # Required for mDNS to work
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/messages"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  chat-data:
+    driver: local
