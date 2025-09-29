@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
+import LoginModal from './components/LoginModal';
+import authService from './services/authService';
 import './App.css';
 
 // Simple config - reads from environment or uses default
@@ -9,20 +11,21 @@ const socketUrl =
     ? `http://localhost:${SERVER_PORT}`
     : `http://${window.location.hostname}:${SERVER_PORT}`;
 
-const socket = io(socketUrl);
-
 function App() {
-  const [username, setUsername] = useState('');
-  const [isJoined, setIsJoined] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+  // const [onlineUsers, setOnlineUsers] = useState([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+  const socketRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,21 +35,52 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
+  // Initialize authentication and socket connection
   useEffect(() => {
-    // Load message history
-    const loadMessages = async () => {
-      try {
-        const response = await fetch('/api/messages');
-        const data = await response.json();
-        setMessages(data);
-      } catch (error) {
-        console.error('Error loading messages:', error);
+    const initializeApp = async () => {
+      setLoading(true);
+      
+      // Check if user is already authenticated
+      const isValid = await authService.verifyToken();
+      
+      if (isValid) {
+        const userData = authService.getUser();
+        setUser(userData);
+        setIsAuthenticated(true);
+        initializeSocket();
+      } else {
+        setLoading(false);
       }
     };
 
-    loadMessages();
+    initializeApp();
+  }, []);
+
+  const initializeSocket = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
+    const socket = io(socketUrl);
+    socketRef.current = socket;
+
+    // Authenticate with socket
+    socket.emit('authenticate', { token: authService.getToken() });
 
     // Socket event listeners
+    socket.on('authenticated', (data) => {
+      console.log('Socket authenticated:', data);
+      setLoading(false);
+    });
+
+    socket.on('auth_error', (error) => {
+      console.error('Socket auth error:', error);
+      authService.clearAuth();
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+    });
+
     socket.on('receive_message', (message) => {
       setMessages((prev) => [...prev, message]);
     });
@@ -85,33 +119,78 @@ function App() {
     });
 
     return () => {
+      socket.off('authenticated');
+      socket.off('auth_error');
       socket.off('receive_message');
       socket.off('user_joined');
       socket.off('user_left');
       socket.off('user_typing');
       socket.off('user_stop_typing');
     };
-  }, []);
+  };
 
-  const handleJoin = (e) => {
-    e.preventDefault();
-    if (username.trim()) {
-      setIsJoined(true);
-      socket.emit('join', username.trim());
+  // Load messages when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const loadMessages = async () => {
+        try {
+          const response = await fetch('/api/messages');
+          const data = await response.json();
+          setMessages(data);
+        } catch (error) {
+          console.error('Error loading messages:', error);
+        }
+      };
+
+      loadMessages();
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = async (username, password) => {
+    try {
+      const result = await authService.login(username, password);
+      setUser(result.user);
+      setIsAuthenticated(true);
+      setShowLoginModal(false);
+      initializeSocket();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleRegister = async (username, password) => {
+    try {
+      const result = await authService.register(username, password);
+      setUser(result.user);
+      setIsAuthenticated(true);
+      setShowLoginModal(false);
+      initializeSocket();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleLogout = () => {
+    authService.clearAuth();
+    setUser(null);
+    setIsAuthenticated(false);
+    setMessages([]);
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (newMessage.trim()) {
-      socket.emit('send_message', {
-        username,
+    if (newMessage.trim() && socketRef.current) {
+      socketRef.current.emit('send_message', {
         message: newMessage.trim(),
       });
       setNewMessage('');
 
       // Stop typing indicator
-      socket.emit('stop_typing', { username });
+      socketRef.current.emit('stop_typing', { username: user.username });
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -122,17 +201,19 @@ function App() {
     setNewMessage(e.target.value);
 
     // Emit typing event
-    socket.emit('typing', { username });
+    if (socketRef.current) {
+      socketRef.current.emit('typing', { username: user.username });
 
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set timeout to stop typing
+      typingTimeoutRef.current = setTimeout(() => {
+        socketRef.current.emit('stop_typing', { username: user.username });
+      }, 1000);
     }
-
-    // Set timeout to stop typing
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('stop_typing', { username });
-    }, 1000);
   };
 
   const formatTime = (timestamp) => {
@@ -171,15 +252,16 @@ function App() {
       const fileInfo = await response.json();
 
       // Send file message via socket
-      socket.emit('send_message', {
-        username,
-        message: `📎 Shared a file: ${fileInfo.originalname}`,
-        message_type: 'file',
-        file_name: fileInfo.originalname,
-        file_path: fileInfo.filename,
-        file_size: fileInfo.size,
-        file_type: fileInfo.mimetype,
-      });
+      if (socketRef.current) {
+        socketRef.current.emit('send_message', {
+          message: `📎 Shared a file: ${fileInfo.originalname}`,
+          message_type: 'file',
+          file_name: fileInfo.originalname,
+          file_path: fileInfo.filename,
+          file_size: fileInfo.size,
+          file_type: fileInfo.mimetype,
+        });
+      }
 
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -224,24 +306,37 @@ function App() {
     return fileType && fileType.startsWith('image/');
   };
 
-  if (!isJoined) {
+  if (loading) {
+    return (
+      <div className='login-container'>
+        <div className='login-card'>
+          <h1>🏠 Local Chat</h1>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return (
       <div className='login-container'>
         <div className='login-card'>
           <h1>🏠 Local Chat</h1>
           <p>Join the local network chat</p>
-          <form onSubmit={handleJoin}>
-            <input
-              type='text'
-              placeholder='Enter your username'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={20}
-              required
-            />
-            <button type='submit'>Join Chat</button>
-          </form>
+          <button 
+            className='login-btn'
+            onClick={() => setShowLoginModal(true)}
+          >
+            Login / Create Account
+          </button>
         </div>
+        
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
       </div>
     );
   }
@@ -251,7 +346,10 @@ function App() {
       <div className='chat-header'>
         <h1>🏠 Local Chat</h1>
         <div className='user-info'>
-          <span className='username'>Welcome, {username}!</span>
+          <span className='username'>Welcome, {user.username}!</span>
+          <button className='logout-btn' onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </div>
 
@@ -262,7 +360,7 @@ function App() {
             className={`message ${
               message.type === 'system'
                 ? 'system-message'
-                : message.username === username
+                : message.username === user.username
                 ? 'own-message'
                 : 'other-message'
             }`}

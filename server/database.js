@@ -1,20 +1,44 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const config = require('../config');
 
 class Database {
   constructor() {
-    this.dbPath = path.join(__dirname, 'chat.db');
+    // Resolve database path from config, supporting both absolute and relative paths
+    this.dbPath = path.isAbsolute(config.DB_PATH)
+      ? config.DB_PATH
+      : path.resolve(__dirname, '..', config.DB_PATH);
+
     this.db = new sqlite3.Database(this.dbPath, (err) => {
       if (err) {
         console.error('Error opening database:', err.message);
       } else {
-        console.log('Connected to SQLite database');
+        console.log('Connected to SQLite database at', this.dbPath);
         this.initDatabase();
       }
     });
   }
 
   initDatabase() {
+    // Create users table
+    const createUsersTable = `
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    this.db.run(createUsersTable, (err) => {
+      if (err) {
+        console.error('Error creating users table:', err.message);
+        return;
+      }
+      console.log('Users table ready');
+    });
+
     // First, create the table with original schema if it doesn't exist
     const createMessagesTable = `
       CREATE TABLE IF NOT EXISTS messages (
@@ -148,6 +172,81 @@ class Database {
           reject(err);
         } else {
           resolve({ deleted: this.changes });
+        }
+      });
+    });
+  }
+
+  // User management methods
+  createUser(username, password) {
+    return new Promise((resolve, reject) => {
+      const sql = `INSERT INTO users (username, password) VALUES (?, ?)`;
+      
+      this.db.run(sql, [username, password], function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            id: this.lastID,
+            username,
+            password
+          });
+        }
+      });
+    });
+  }
+
+  getUserByUsername(username) {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT * FROM users WHERE username = ?`;
+      
+      this.db.get(sql, [username], (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      });
+    });
+  }
+
+  getUserById(id) {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT * FROM users WHERE id = ?`;
+      
+      this.db.get(sql, [id], (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      });
+    });
+  }
+
+  updateLastSeen(userId) {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE id = ?`;
+      
+      this.db.run(sql, [userId], function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ updated: this.changes });
+        }
+      });
+    });
+  }
+
+  getAllUsers() {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT id, username, created_at, last_seen FROM users ORDER BY last_seen DESC`;
+      
+      this.db.all(sql, [], (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
         }
       });
     });

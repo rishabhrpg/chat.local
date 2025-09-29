@@ -4,6 +4,7 @@ A simple real-time chat application for local networks built with Node.js, Socke
 
 ## Features
 
+- 🔐 **User Authentication** - Secure login/register system with JWT tokens
 - 💬 Real-time messaging with Socket.IO
 - 🗄️ Message persistence with SQLite database
 - 👥 User join/leave notifications
@@ -16,6 +17,7 @@ A simple real-time chat application for local networks built with Node.js, Socke
 - 🎨 Modern, beautiful UI
 - 🐳 Docker containerization support
 - 📡 mDNS service discovery (chat.local)
+- 🔒 **Persistent Login** - Stay logged in across browser sessions
 
 ## Tech Stack
 
@@ -24,6 +26,8 @@ A simple real-time chat application for local networks built with Node.js, Socke
 - Express.js
 - Socket.IO
 - SQLite3
+- JWT Authentication
+- bcryptjs (Password Hashing)
 - mDNS (Bonjour Service)
 
 **Frontend:**
@@ -171,6 +175,29 @@ The server binds to `0.0.0.0`, making it accessible from other devices on your l
 - **Linux:** Install `avahi-daemon`
 - **Android:** Use apps like "Service Browser" to discover services
 
+## Authentication System
+
+### Features
+- **🔐 Secure Login/Register** - JWT-based authentication with bcrypt password hashing
+- **🔒 Persistent Sessions** - Users stay logged in across browser sessions
+- **👤 User Management** - Automatic account creation with username validation
+- **🛡️ Protected Routes** - All chat functionality requires authentication
+- **⚡ Real-time Auth** - Socket.IO connections are authenticated with JWT tokens
+
+### How It Works
+1. **First Visit:** User sees login screen with "Login / Create Account" button
+2. **Account Creation:** If username doesn't exist, user can create new account
+3. **Login:** If username exists, user enters password to login
+4. **Auto-Login:** Returning users are automatically logged in if token is valid
+5. **Session Management:** JWT tokens are stored in localStorage and verified on each request
+
+### Security Features
+- Passwords are hashed using bcrypt with salt rounds
+- JWT tokens expire after 7 days (configurable)
+- All API endpoints (except auth) require valid JWT token
+- Socket.IO connections are authenticated before allowing chat access
+- User sessions are tracked and updated on activity
+
 ## File Sharing
 
 ### Supported Features
@@ -202,14 +229,27 @@ ALLOWED_FILE_TYPES="image/*,application/pdf" npm start
 ```
 local-chat/
 ├── server/
-│   ├── index.js          # Express server with Socket.IO
-│   ├── database.js       # SQLite database operations
-│   └── chat.db          # SQLite database file (created automatically)
+│   ├── routes/          # API route modules
+│   │   ├── auth.js      # Authentication endpoints
+│   │   ├── messages.js  # Message endpoints
+│   │   └── files.js     # File upload/download endpoints
+│   ├── middleware/      # Express middleware
+│   │   └── auth.js      # JWT authentication middleware
+│   ├── services/        # Business logic services
+│   │   └── socketService.js  # Socket.IO service with auth
+│   ├── index.js         # Main Express server
+│   ├── database.js      # SQLite database operations
+│   └── chat.db         # SQLite database file (created automatically)
 ├── client/
 │   ├── public/
 │   │   ├── index.html
 │   │   └── manifest.json
 │   ├── src/
+│   │   ├── components/  # React components
+│   │   │   ├── LoginModal.js    # Login/Register modal
+│   │   │   └── LoginModal.css   # Modal styles
+│   │   ├── services/    # Client services
+│   │   │   └── authService.js   # Authentication service
 │   │   ├── App.js       # Main React component
 │   │   ├── App.css      # Styles
 │   │   ├── index.js     # React entry point
@@ -223,22 +263,36 @@ local-chat/
 
 ## API Endpoints
 
-- `GET /api/config` - Get server configuration
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/verify` - Verify JWT token
+
+### Messages
 - `GET /api/messages` - Retrieve chat message history
-- `POST /api/upload` - Upload a file (multipart/form-data)
+- `GET /api/messages/user/:username` - Get messages by specific user
+- `DELETE /api/messages` - Clear all messages (admin)
+
+### Files
+- `POST /api/files/upload` - Upload a file (multipart/form-data)
 - `GET /api/files/:filename` - Serve uploaded files
-- `GET /api/download/:filename` - Download files with original filename
+- `GET /api/files/download/:filename` - Download files with original filename
+
+### General
+- `GET /api/config` - Get server configuration
 - `GET /*` - Serve React app (production)
 
 ## Socket.IO Events
 
 ### Client to Server:
-- `join` - User joins the chat
+- `authenticate` - Authenticate with JWT token
 - `send_message` - Send a new message
 - `typing` - User is typing
 - `stop_typing` - User stopped typing
 
 ### Server to Client:
+- `authenticated` - Authentication successful
+- `auth_error` - Authentication failed
 - `receive_message` - New message received
 - `user_joined` - User joined notification
 - `user_left` - User left notification
@@ -247,12 +301,28 @@ local-chat/
 
 ## Database Schema
 
+### Users Table
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### Messages Table
 ```sql
 CREATE TABLE messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT NOT NULL,
   message TEXT NOT NULL,
+  message_type TEXT DEFAULT 'text',
+  file_name TEXT,
+  file_path TEXT,
+  file_size INTEGER,
+  file_type TEXT,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

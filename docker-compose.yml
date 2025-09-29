@@ -2,14 +2,17 @@ services:
   local-chat:
     build: .
     container_name: local-chat-app
-    ports:
-      - "3001:3001"
     volumes:
       - chat-data:/app/data
+      - uploads-data:/app/uploads
     environment:
       - NODE_ENV=production
       - PORT=3001
       - DB_PATH=/app/data/chat.db
+      - UPLOAD_DIR=/app/uploads
+      - JWT_SECRET=change-this-to-a-strong-secret
+      - SERVICE_NAME=Local Chat
+      - MDNS_HOSTNAME=chat.local
     restart: unless-stopped
     network_mode: host  # Required for mDNS to work
     healthcheck:
@@ -20,4 +23,6 @@ services:
 
 volumes:
   chat-data:
+    driver: local
+  uploads-data:
     driver: local
