@@ -1,0 +1,37 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+
+      - name: Package build
+        run: tar -czf build.tar.gz build server.js package*.json
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-$(date +'%Y-%m-%d-%H%M')
+          name: "Release $(date +'%Y-%m-%d %H:%M')"
+          files: build.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

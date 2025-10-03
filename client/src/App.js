@@ -8,8 +8,8 @@ import './App.css';
 const SERVER_PORT = process.env.CLIENT_PORT || 80;
 const socketUrl =
   window.location.hostname === 'localhost'
-    ? `http://localhost:${SERVER_PORT}`
-    : `http://${window.location.hostname}:${SERVER_PORT}`;
+    ? `//localhost:${SERVER_PORT}`
+    : `//${window.location.hostname}:${window.location.port}`;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -39,10 +39,10 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       setLoading(true);
-      
+
       // Check if user is already authenticated
       const isValid = await authService.verifyToken();
-      
+
       if (isValid) {
         const userData = authService.getUser();
         setUser(userData);
@@ -262,7 +262,6 @@ function App() {
           file_type: fileInfo.mimetype,
         });
       }
-
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file. Please try again.');
@@ -295,7 +294,7 @@ function App() {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragActive(false);
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       handleFileUpload(files[0]);
@@ -323,14 +322,11 @@ function App() {
         <div className='login-card'>
           <h1>🏠 Local Chat</h1>
           <p>Join the local network chat</p>
-          <button 
-            className='login-btn'
-            onClick={() => setShowLoginModal(true)}
-          >
+          <button className='login-btn' onClick={() => setShowLoginModal(true)}>
             Login / Create Account
           </button>
         </div>
-        
+
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
@@ -389,11 +385,13 @@ function App() {
                         </div>
                         <div className='file-details'>
                           <div className='file-name'>{message.file_name}</div>
-                          <div className='file-size'>{formatFileSize(message.file_size)}</div>
+                          <div className='file-size'>
+                            {formatFileSize(message.file_size)}
+                          </div>
                         </div>
                       </div>
                       {isImageFile(message.file_type) && (
-                        <img 
+                        <img
                           src={`/api/files/${message.file_path}`}
                           alt={message.file_name}
                           className='file-image'
@@ -403,7 +401,7 @@ function App() {
                         />
                       )}
                       <div className='file-actions'>
-                        <a 
+                        <a
                           href={`/api/download/${message.file_path}`}
                           download={message.file_name}
                           className='file-download-btn'
@@ -434,7 +432,7 @@ function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div 
+      <div
         className={`message-form-container ${dragActive ? 'drag-active' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -445,7 +443,7 @@ function App() {
             <div className='drag-text'>📁 Drop file to share</div>
           </div>
         )}
-        
+
         <form className='message-form' onSubmit={handleSendMessage}>
           <input
             type='text'
@@ -455,7 +453,7 @@ function App() {
             maxLength={500}
             disabled={uploadingFile}
           />
-          
+
           <input
             type='file'
             ref={fileInputRef}
@@ -463,7 +461,7 @@ function App() {
             style={{ display: 'none' }}
             accept='image/*,text/*,application/pdf,application/zip,.doc,.docx,.xls,.xlsx'
           />
-          
+
           <button
             type='button'
             className='file-upload-btn'
@@ -473,9 +471,9 @@ function App() {
           >
             {uploadingFile ? '⏳' : '📎'}
           </button>
-          
-          <button 
-            type='submit' 
+
+          <button
+            type='submit'
             disabled={!newMessage.trim() || uploadingFile}
             className='send-btn'
           >

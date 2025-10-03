@@ -5,7 +5,7 @@
 
 module.exports = {
   // Server
-  PORT: process.env.PORT || 3000,
+  PORT: process.env.PORT || 80,
   HOST: process.env.HOST || '0.0.0.0',
   
   // Database
