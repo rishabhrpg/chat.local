@@ -85,12 +85,13 @@ jobs:
       - name: Create release package
         run: |
           mkdir -p release-package
-
+          
           # Copy server files
           cp -r server/ release-package/
-
-          # Copy client build
-          cp -r client/build/ release-package/client/build/
+          
+          # Create client directory and copy build
+          mkdir -p release-package/client
+          cp -r client/build/ release-package/client/
 
           # Copy configuration and package files
           cp config.js release-package/
