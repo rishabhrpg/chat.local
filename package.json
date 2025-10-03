@@ -7,15 +7,11 @@
     "start": "node server/index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
-    "copyBuild": "scp -r client/build  super@192.168.29.175:/home/super/home-lab/chat.local/client/build",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
-    "docker:build": "docker build -t local-chat .",
-    "docker:run": "docker run -p 3001:3001 --network host --name local-chat-app local-chat",
-    "docker:stop": "docker stop local-chat-app && docker rm local-chat-app",
-    "docker:compose:up": "docker compose up -d",
-    "docker:compose:down": "docker compose down"
+    "test": "cd client && npm test",
+    "production": "NODE_ENV=production npm start"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -39,7 +35,8 @@
     "react",
     "local-network",
     "mdns",
-    "docker"
+    "real-time",
+    "file-sharing"
   ],
   "author": "",
   "license": "MIT"
