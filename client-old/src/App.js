@@ -11,6 +11,8 @@ const socketUrl =
     ? `//localhost:${SERVER_PORT}`
     : `//${window.location.hostname}:${window.location.port}`;
 
+console.log('SERVER_PORT', SERVER_PORT);
+
 function App() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);

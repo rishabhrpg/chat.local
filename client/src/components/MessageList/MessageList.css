@@ -1,0 +1,30 @@
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  padding: 10px 20px;
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .messages-container {
+    padding: 15px;
+  }
+}
+

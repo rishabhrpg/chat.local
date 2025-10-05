@@ -1,8 +1,6 @@
 const express = require('express');
-const Database = require('../database');
+const db = require('../database');
 const router = express.Router();
-
-const db = new Database();
 
 // Get all messages
 router.get('/', async (req, res) => {

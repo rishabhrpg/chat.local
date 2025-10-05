@@ -1,0 +1,160 @@
+.message {
+  max-width: 70%;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.own-message {
+  align-self: flex-end;
+}
+
+.own-message .message-header {
+  justify-content: flex-end;
+}
+
+.own-message .message-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px 20px 5px 20px;
+}
+
+.other-message .message-content {
+  background: #f8f9fa;
+  color: #333;
+  border-radius: 20px 20px 20px 5px;
+  border: 1px solid #e9ecef;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  padding: 0 5px;
+}
+
+.message-username {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.message-content {
+  padding: 12px 18px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* System Messages */
+.system-message {
+  align-self: center;
+  max-width: 90%;
+}
+
+.system-content {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 15px;
+  padding: 10px 15px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.system-text {
+  color: #667eea;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* File Messages */
+.file-message {
+  background: rgba(248, 249, 250, 0.5);
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 8px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.file-icon {
+  font-size: 2rem;
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.file-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-actions {
+  margin-top: 10px;
+}
+
+.file-download-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.file-download-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+  text-decoration: none;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .message {
+    max-width: 85%;
+  }
+}
+
