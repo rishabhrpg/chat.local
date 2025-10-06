@@ -2,18 +2,21 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .chat-container {
-    height: 100vh;
+    height: 100%;
+    width: 100%;
     border-radius: 0;
+    max-width: 100%;
   }
 }
 

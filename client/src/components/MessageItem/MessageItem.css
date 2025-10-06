@@ -1,5 +1,6 @@
 .message {
-  max-width: 70%;
+  max-width: 90%;
+  width: fit-content;
   animation: fadeIn 0.3s ease-in;
 }
 
@@ -19,13 +20,24 @@
 }
 
 .own-message .message-header {
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .own-message .message-content {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 20px 20px 5px 20px;
+}
+
+.own-message .message-content:has(.file-image) {
+  background: transparent;
+  padding: 0;
+}
+
+.other-message .message-content:has(.file-image) {
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .other-message .message-content {
@@ -39,18 +51,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   padding: 0 5px;
+  gap: 12px;
+  min-height: 20px;
 }
 
 .message-username {
   font-weight: 600;
   color: #667eea;
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .timestamp {
   font-size: 0.8rem;
+  color: #999;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.own-message .timestamp {
   color: #999;
 }
 
@@ -58,6 +82,31 @@
   padding: 12px 18px;
   word-wrap: break-word;
   line-height: 1.4;
+  width: fit-content;
+  min-width: 60px;
+}
+
+.message-link {
+  color: #667eea;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+  word-break: break-all;
+}
+
+.message-link:hover {
+  color: #5a6ed9;
+  text-decoration: underline;
+}
+
+.own-message .message-link {
+  color: #fff;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.own-message .message-link:hover {
+  color: #f0f0f0;
+  text-decoration: underline;
 }
 
 /* System Messages */
@@ -86,22 +135,34 @@
 
 /* File Messages */
 .file-message {
-  background: rgba(248, 249, 250, 0.5);
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 15px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
   margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  max-width: 400px;
+  width: fit-content;
+  min-width: 280px;
+}
+
+.file-message:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .file-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 10px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .file-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 .file-details {
@@ -111,42 +172,69 @@
 .file-name {
   font-weight: 600;
   color: #333;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   word-break: break-all;
+  font-size: 0.9rem;
 }
 
 .file-size {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #666;
 }
 
 .file-image {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 8px;
-  margin: 10px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-height: 350px;
+  border-radius: 10px;
+  margin: 0 0 10px 0;
+  box-shadow: none;
+  border: none;
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  object-fit: cover;
+}
+
+.file-image:hover {
+  transform: scale(1.01);
+}
+
+.own-message .file-message {
+  background: #ffffff;
+}
+
+.other-message .file-message {
+  background: #ffffff;
 }
 
 .file-actions {
-  margin-top: 10px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
 }
 
 .file-download-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   text-decoration: none;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: all 0.3s ease;
+  border: none;
+  width: 100%;
+  justify-content: center;
 }
 
 .file-download-btn:hover {
+  background: linear-gradient(135deg, #5a6ed9 0%, #6a4193 100%);
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
   text-decoration: none;
   color: white;
 }
@@ -155,6 +243,90 @@
 @media (max-width: 768px) {
   .message {
     max-width: 85%;
+  }
+  
+  .message-header {
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+  
+  .message-username {
+    font-size: 0.85rem;
+    max-width: 150px;
+  }
+  
+  .timestamp {
+    font-size: 0.75rem;
+  }
+  
+  .file-message {
+    padding: 10px;
+    border-radius: 14px;
+    min-width: 240px;
+  }
+  
+  .file-image {
+    max-height: 300px;
+    border-radius: 8px;
+  }
+  
+  .file-info {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .file-icon {
+    font-size: 1.25rem;
+  }
+  
+  .file-name {
+    font-size: 0.85rem;
+  }
+  
+  .file-size {
+    font-size: 0.7rem;
+  }
+  
+  .file-download-btn {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-header {
+    gap: 8px;
+    padding: 0 3px;
+  }
+  
+  .message-username {
+    font-size: 0.8rem;
+    max-width: 120px;
+  }
+  
+  .timestamp {
+    font-size: 0.7rem;
+  }
+  
+  .file-message {
+    padding: 8px;
+    border-radius: 12px;
+    min-width: 200px;
+  }
+  
+  .file-image {
+    max-height: 250px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .file-actions {
+    padding-top: 8px;
+  }
+  
+  .file-download-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
   }
 }
 

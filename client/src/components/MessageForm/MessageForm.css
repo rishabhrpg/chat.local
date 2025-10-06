@@ -32,13 +32,16 @@
 /* Message Form */
 .message-form {
   display: flex;
-  gap: 10px;
-  padding: 20px 30px;
+  gap: 8px;
+  padding: 16px 20px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .message-form input[type="text"] {
   flex: 1;
-  padding: 15px 20px;
+  min-width: 0; /* Allow input to shrink below content size */
+  padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 25px;
   font-size: 1rem;
@@ -52,7 +55,7 @@
 }
 
 .file-upload-btn, .send-btn {
-  padding: 15px 20px;
+  padding: 12px 18px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -60,24 +63,34 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 60px;
+  font-size: 1rem;
+  white-space: nowrap;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
 }
 
 .file-upload-btn {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
 }
 
 .send-btn {
-  min-width: 80px;
-}
-
-.file-upload-btn:hover:not(:disabled), .send-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  min-width: 75px;
+  padding: 12px 20px;
 }
 
 .file-upload-btn:hover:not(:disabled) {
-  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .file-upload-btn:disabled, .send-btn:disabled {
@@ -90,7 +103,54 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .message-form {
-    padding: 15px 20px;
+    padding: 12px 15px;
+    gap: 6px;
+  }
+  
+  .message-form input[type="text"] {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+  
+  .file-upload-btn, .send-btn {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+  
+  .file-upload-btn {
+    min-width: 44px;
+  }
+  
+  .send-btn {
+    min-width: 65px;
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-form {
+    padding: 10px 12px;
+    gap: 5px;
+  }
+  
+  .message-form input[type="text"] {
+    padding: 9px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .file-upload-btn, .send-btn {
+    padding: 9px 12px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+  }
+  
+  .file-upload-btn {
+    min-width: 40px;
+  }
+  
+  .send-btn {
+    min-width: 60px;
+    padding: 9px 14px;
   }
 }
 

@@ -3,10 +3,11 @@ import type { SocketMessageData } from '../types';
 
 // Get Socket.IO URL based on environment
 const getSocketUrl = (): string => {
+  const env = import.meta.env.VITE_ENV || 'production';
   const serverPort = import.meta.env.VITE_SERVER_PORT || '80';
   
-  if (window.location.hostname === 'localhost') {
-    return `http://localhost:${serverPort}`;
+  if (env === 'development') {
+    return `${window.location.protocol}//${window.location.hostname}:${serverPort}`;
   }
   
   // When served by Express, use the same domain

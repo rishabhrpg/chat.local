@@ -11,8 +11,8 @@ interface MessageItemProps {
 const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage }) => {
   const formatTime = (timestamp: string | number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
+      hour12: true,
+      hour: 'numeric',
       minute: '2-digit',
     });
   };
@@ -27,6 +27,30 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage }) => {
 
   const isImageFile = (fileType?: string) => {
     return fileType && fileType.startsWith('image/');
+  };
+
+  const linkifyText = (text: string) => {
+    // URL regex pattern
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    
+    const parts = text.split(urlPattern);
+    
+    return parts.map((part, index) => {
+      if (part.match(urlPattern)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="message-link"
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
   };
 
   if (message.type === 'system') {
@@ -87,7 +111,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage }) => {
             )}
           </div>
         ) : (
-          message.message
+          <span>{linkifyText(message.message)}</span>
         )}
       </div>
     </div>

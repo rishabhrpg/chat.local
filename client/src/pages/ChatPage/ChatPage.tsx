@@ -145,10 +145,17 @@ const ChatPage: React.FC<ChatPageProps> = ({ user, onLogout }) => {
 
   const handleFileUpload = useCallback(
     async (file: File) => {
+      console.log('File selected:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+
       setUploadingFile(true);
 
       try {
         const fileInfo = await messageService.uploadFile(file);
+        console.log('File uploaded successfully:', fileInfo);
 
         // Send file message via socket
         socketService.sendMessage({
@@ -161,7 +168,8 @@ const ChatPage: React.FC<ChatPageProps> = ({ user, onLogout }) => {
         });
       } catch (error) {
         console.error('Error uploading file:', error);
-        alert('Failed to upload file. Please try again.');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        alert(`Failed to upload file: ${errorMessage}\n\nPlease try again or choose a different file.`);
       } finally {
         setUploadingFile(false);
       }

@@ -90,7 +90,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
           ref={fileInputRef}
           onChange={handleFileSelect}
           style={{ display: 'none' }}
-          accept="image/*,text/*,application/pdf,application/zip,.doc,.docx,.xls,.xlsx"
+          accept="image/*,video/*,audio/*,application/pdf,application/zip,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/*"
         />
 
         <button
