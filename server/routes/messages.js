@@ -1,11 +1,13 @@
 const express = require('express');
 const db = require('../database');
+const config = require('../../config');
 const router = express.Router();
 
 // Get all messages
 router.get('/', async (req, res) => {
   try {
-    const messages = await db.getAllMessages();
+    const limit = req.query.limit ? parseInt(req.query.limit) : config.MESSAGE_LIMIT;
+    const messages = await db.getAllMessages(limit);
     res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);

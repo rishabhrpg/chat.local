@@ -2,8 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../database');
+const config = require('../../config');
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Register new user
 router.post('/register', async (req, res) => {
@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, config.BCRYPT_ROUNDS);
 
     // Create user
     const user = await db.createUser(username, hashedPassword);
@@ -37,8 +37,8 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: '7d' }
+      config.JWT_SECRET,
+      { expiresIn: config.JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -79,8 +79,8 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: '7d' }
+      config.JWT_SECRET,
+      { expiresIn: config.JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -106,7 +106,7 @@ router.get('/verify', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     const user = await db.getUserById(decoded.userId);
     
     if (!user) {

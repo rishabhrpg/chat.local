@@ -6,6 +6,7 @@ const path = require('path');
 const { Bonjour } = require('bonjour-service');
 const bonjour = new Bonjour();
 const config = require('../config');
+const getLocalIp = require('./utils/getLocalIp');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -19,7 +20,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
+    origin: config.SOCKET_CORS_ORIGIN,
     methods: ['GET', 'POST'],
   },
 });
@@ -27,7 +28,11 @@ const io = socketIo(server, {
 const PORT = config.PORT;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: config.CORS_ORIGIN,
+  })
+);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/build')));
 
@@ -74,7 +79,8 @@ server.listen(PORT, config.HOST, () => {
 
   console.log(`🌐 mDNS service "${service.name}" published`);
   console.log(`📱 Access via: http://${config.MDNS_HOSTNAME}:${PORT}`);
-  console.log(`🔗 Direct access: http://YOUR_IP:${PORT}`);
+  const localIp = getLocalIp();
+  console.log(`🔗 Direct access: http://${localIp}:${PORT}`);
 
   // Graceful shutdown
   process.on('SIGTERM', () => {

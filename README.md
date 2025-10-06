@@ -347,34 +347,61 @@ CREATE TABLE messages (
 - `npm run docker:compose:up` - Start with Docker Compose
 - `npm run docker:compose:down` - Stop Docker Compose
 
-## Customization
+## Configuration
 
-### Simple Configuration
+### Environment Variables
 
-All configuration is in `config.js` - environment variables take priority over defaults.
+The application uses environment variables for all important configuration. This provides flexibility and security.
 
-```javascript
-module.exports = {
-  PORT: process.env.PORT || 3001,           // Server port
-  HOST: process.env.HOST || '0.0.0.0',     // Server host
-  DB_PATH: process.env.DB_PATH || './server/chat.db',
-  SERVICE_NAME: process.env.SERVICE_NAME || 'Local Chat',
-  MDNS_HOSTNAME: process.env.MDNS_HOSTNAME || 'chat.local',
-  CLIENT_PORT: process.env.CLIENT_PORT || 3002,
-};
+**Quick Setup:**
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` with your preferred settings
+
+3. Start the application (it automatically loads `.env`)
+
+**Key Configuration Options:**
+
+```bash
+# Server
+PORT=80                    # Server port
+HOST=0.0.0.0              # Bind to all interfaces
+
+# Security
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=7d
+BCRYPT_ROUNDS=10
+
+# File Uploads
+MAX_FILE_SIZE=52428800    # 50MB in bytes
+UPLOAD_DIR=./uploads
+
+# mDNS
+SERVICE_NAME=Local Chat
+MDNS_HOSTNAME=chat.local
+
+# CORS
+CORS_ORIGIN=*
+SOCKET_CORS_ORIGIN=*
 ```
+
+📚 **See [ENV_CONFIG.md](ENV_CONFIG.md) for complete configuration documentation**
 
 ### Changing Ports
 
-**Option 1: Environment Variables (Recommended)**
+**Option 1: Using .env file (Recommended)**
 ```bash
-PORT=8080 npm start                    # Server on port 8080
-REACT_APP_SERVER_PORT=8080 npm run client  # Client connects to 8080
+# Edit .env file
+PORT=8080
 ```
 
-**Option 2: Edit config.js**
-```javascript
-PORT: process.env.PORT || 8080,  // Change default port
+**Option 2: Environment Variables**
+```bash
+PORT=8080 npm start
 ```
 
 **Option 3: Docker Environment**

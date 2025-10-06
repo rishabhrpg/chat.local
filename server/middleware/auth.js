@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../database');
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const config = require('../../config');
 
 const authenticateToken = async (req, res, next) => {
   try {
@@ -11,7 +11,7 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     const user = await db.getUserById(decoded.userId);
     
     if (!user) {
@@ -42,7 +42,7 @@ const optionalAuth = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, config.JWT_SECRET);
       const user = await db.getUserById(decoded.userId);
       
       if (user) {
