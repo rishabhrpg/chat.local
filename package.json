@@ -1,6 +1,6 @@
 {
   "name": "local-chat-app",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "A simple local network chat application with Node.js, Socket.IO, SQLite, and React",
   "main": "server/index.js",
   "scripts": {
